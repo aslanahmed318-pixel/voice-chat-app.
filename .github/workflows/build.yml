@@ -38,15 +38,12 @@ jobs:
 
       - name: Build Android App
         run: |
-          # البحث عن ملف gradlew في أي مكان بالمشروع
           GRADLE_PATH=$(find . -name "gradlew" | head -n 1)
           if [ -n "$GRADLE_PATH" ]; then
-            echo "Found gradlew at: $GRADLE_PATH"
             cd $(dirname "$GRADLE_PATH")
             chmod +x gradlew
-            ./gradlew assembleDebug
+            ./gradlew assembleDebug --stacktrace --continue
           else
-            echo "Searching for expo / react-native workspace..."
             pnpm --recursive exec expo prebuild --platform android || true
             pnpm --recursive exec expo run:android --variant debug || pnpm run build
           fi
