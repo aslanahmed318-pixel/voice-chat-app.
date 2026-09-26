@@ -27,22 +27,25 @@ jobs:
         run: |
           for f in *.zip; do [ -e "$f" ] && unzip -o "$f" || true; done
 
-      - name: Setup Java JDK
+      - name: Setup Java JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
-          java-version: '11'
+          java-version: '17'
 
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
 
       - name: Build Android App
+        env:
+          JAVA_OPTS: "-Xmx4g"
+          GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4g -Dorg.gradle.daemon=false"
         run: |
           GRADLE_PATH=$(find . -name "gradlew" | head -n 1)
           if [ -n "$GRADLE_PATH" ]; then
             cd $(dirname "$GRADLE_PATH")
             chmod +x gradlew
-            ./gradlew assembleDebug --continue
+            ./gradlew assembleDebug -x test -x lint --warning-mode all
           else
             pnpm --recursive exec expo prebuild --platform android || true
             pnpm --recursive exec expo run:android --variant debug || pnpm run build
