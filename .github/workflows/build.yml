@@ -16,7 +16,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
 
       - name: Unzip project code
         run: |
@@ -37,7 +37,7 @@ jobs:
       - name: Build Android App
         run: |
           if [ -d "android" ]; then
-            cd android && ./gradlew assembleDebug
+            cd android && chmod +x gradlew && ./gradlew assembleDebug
           else
             npx react-native build-android --mode=debug || npx expo run:android --variant debug
           fi
