@@ -38,16 +38,17 @@ jobs:
 
       - name: Build Android App
         run: |
-          ANDROID_DIR=$(find . -maxdepth 3 -name "gradlew" -exec dirname {} \;)
-          if [ -n "$ANDROID_DIR" ]; then
-            echo "Found Android directory at: $ANDROID_DIR"
-            cd "$ANDROID_DIR"
+          # البحث عن ملف gradlew في أي مكان بالمشروع
+          GRADLE_PATH=$(find . -name "gradlew" | head -n 1)
+          if [ -n "$GRADLE_PATH" ]; then
+            echo "Found gradlew at: $GRADLE_PATH"
+            cd $(dirname "$GRADLE_PATH")
             chmod +x gradlew
             ./gradlew assembleDebug
           else
-            echo "No gradlew found, building via React Native / Expo"
-            pnpm exec expo prebuild --platform android || true
-            pnpm exec react-native build-android --mode=debug || pnpm exec expo run:android --variant debug
+            echo "Searching for expo / react-native workspace..."
+            pnpm --recursive exec expo prebuild --platform android || true
+            pnpm --recursive exec expo run:android --variant debug || pnpm run build
           fi
 
       - name: Upload APK
@@ -55,5 +56,4 @@ jobs:
         with:
           name: voice-chat-debug-apk
           path: |
-            **/build/outputs/apk/debug/*.apk
-            **/build/outputs/apk/*/*.apk
+            **/*.apk
