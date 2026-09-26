@@ -25,7 +25,7 @@ jobs:
 
       - name: Unzip project code
         run: |
-          unzip -o "*.zip" || true
+          for f in *.zip; do [ -e "$f" ] && unzip -o "$f" || true; done
 
       - name: Setup Java JDK
         uses: actions/setup-java@v4
@@ -38,10 +38,16 @@ jobs:
 
       - name: Build Android App
         run: |
-          if [ -d "android" ]; then
-            cd android && chmod +x gradlew && ./gradlew assembleDebug
+          ANDROID_DIR=$(find . -maxdepth 3 -name "gradlew" -exec dirname {} \;)
+          if [ -n "$ANDROID_DIR" ]; then
+            echo "Found Android directory at: $ANDROID_DIR"
+            cd "$ANDROID_DIR"
+            chmod +x gradlew
+            ./gradlew assembleDebug
           else
-            npx react-native build-android --mode=debug || npx expo run:android --variant debug
+            echo "No gradlew found, building via React Native / Expo"
+            pnpm exec expo prebuild --platform android || true
+            pnpm exec react-native build-android --mode=debug || pnpm exec expo run:android --variant debug
           fi
 
       - name: Upload APK
@@ -49,5 +55,5 @@ jobs:
         with:
           name: voice-chat-debug-apk
           path: |
-            android/app/build/outputs/apk/debug/*.apk
-            app/build/outputs/apk/debug/*.apk
+            **/build/outputs/apk/debug/*.apk
+            **/build/outputs/apk/*/*.apk
