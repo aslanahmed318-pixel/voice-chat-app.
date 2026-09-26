@@ -28,9 +28,6 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-
       - name: Install dependencies
         run: npm install
 
@@ -49,4 +46,3 @@ jobs:
           path: |
             android/app/build/outputs/apk/debug/*.apk
             app/build/outputs/apk/debug/*.apk
-            
