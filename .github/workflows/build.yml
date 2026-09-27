@@ -36,16 +36,22 @@ jobs:
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
 
-      - name: Build Android App
-        env:
-          JAVA_OPTS: "-Xmx4g"
-          GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4g -Dorg.gradle.daemon=false"
+      - name: Patch Android SDK Version & Build
         run: |
           GRADLE_PATH=$(find . -name "gradlew" | head -n 1)
           if [ -n "$GRADLE_PATH" ]; then
-            cd $(dirname "$GRADLE_PATH")
+            ROOT_DIR=$(dirname "$GRADLE_PATH")
+            echo "Found Android root at $ROOT_DIR"
+            
+            # رفع compileSdkVersion و targetSdkVersion إلى 34 تلقائياً لحل تعارض مكتبات androidx
+            find "$ROOT_DIR" -name "build.gradle" -exec sed -i 's/compileSdkVersion = .*/compileSdkVersion = 34/g' {} +
+            find "$ROOT_DIR" -name "build.gradle" -exec sed -i 's/targetSdkVersion = .*/targetSdkVersion = 34/g' {} +
+            find "$ROOT_DIR" -name "build.gradle" -exec sed -i 's/compileSdk = .*/compileSdk = 34/g' {} +
+            find "$ROOT_DIR" -name "build.gradle" -exec sed -i 's/targetSdk = .*/targetSdk = 34/g' {} +
+
+            cd "$ROOT_DIR"
             chmod +x gradlew
-            ./gradlew assembleDebug -x test -x lint --warning-mode all
+            ./gradlew assembleDebug -Dorg.gradle.jvmargs="-Xmx4g" --continue -x test -x lint
           else
             pnpm --recursive exec expo prebuild --platform android || true
             pnpm --recursive exec expo run:android --variant debug || pnpm run build
