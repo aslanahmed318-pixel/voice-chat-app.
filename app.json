@@ -7,6 +7,11 @@
     "userInterfaceStyle": "light",
     "android": {
       "package": "com.aslanahmed318.snaybr51"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "d04ea5c2-777d-4e88-89d4-42a5018f664f"
+      }
     }
   }
 }
